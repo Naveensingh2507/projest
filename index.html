@@ -35,7 +35,6 @@ int main() {
     int last4digits[3];
     int previousMonthUnits[3];
 
-    // 1 Create and write default database
     FILE *db = fopen("database.txt", "w");
     if(db == NULL){
         printf("Error creating database file!\n");
@@ -62,14 +61,12 @@ int main() {
 
     fclose(db);
 
-    // Open file for reading
     db = fopen("database.txt", "r");
     if(db == NULL){
         printf("Error opening database file!\n");
         return 1;
     }
 
-    // 3 Read database line by line
     for(int i = 0; i &lt; 3; i++){
         fgets(names[i], 50, db);
         fgets(address[i], 100, db);
@@ -80,24 +77,21 @@ int main() {
 
     fclose(db);
 
-    // 4 Remove newline added by fgets
     for(int i = 0; i &lt; 3; i++){
         names[i][strcspn(names[i], "\n")] = '\0';
         address[i][strcspn(address[i], "\n")] = '\0';
         phone[i][strcspn(phone[i], "\n")] = '\0';
     }
 
-    // 5 Take user input
     int inputID, index = -1;
-    
     do {
         printf("Enter last 4 digits of your consumer number: ");
-        scanf("%d", &inputID);
+        scanf("%d", &amp;inputID);
 
-        index = -1; // reset index
+        index = -1;
         for(int i = 0; i &lt; 3; i++){
             if(last4digits[i] == inputID){
-                index = i;  // valid input found
+                index = i;
                 break;
             }
         }
@@ -106,16 +100,15 @@ int main() {
             printf("Invalid number! Please try again.\n");
         }
 
-    } while(index == -1); // repeat until valid
+    } while(index == -1);
 
     printf("\nCustomer Found!\nName: %s\nAddress: %s\nPhone: %s\n",
            names[index], address[index], phone[index]);
 
-    // 6 Read previous & current readings
     int prevReading = previousMonthUnits[index];
     int currentReading;
     printf("\nPrevious month reading: %d units\nEnter current month meter reading: ", prevReading);
-    scanf("%d", &currentReading);
+    scanf("%d", &amp;currentReading);
 
     if(currentReading &lt; prevReading){
         printf("\nInvalid reading! Current must be &gt;= previous\n");
@@ -124,19 +117,18 @@ int main() {
 
     int units = currentReading - prevReading;
 
-    // 7 Category selection
     int category;
     do {
         printf("\nSelect Category:\n");
         printf("1. Domestic\n2. Commercial\n3. Industrial\n4. Agricultural\n");
         printf("Enter your choice: ");
-        scanf("%d", &category);
+        scanf("%d", &amp;category);
 
         if(category &lt; 1 || category &gt; 4){
             printf("Invalid category! Please enter 1-4.\n");
         }
 
-    } while(category &lt; 1 || category &gt; 4);  // repeat until valid
+    } while(category &lt; 1 || category &gt; 4);
 
     char catName[20];
     float fixedCharge, rate1, rate2, rate3;
@@ -147,31 +139,26 @@ int main() {
         fixedCharge = 100;
         slab1 = 100; slab2 = 100;
         rate1 = 3.0; rate2 = 4.5; rate3 = 6.0;
-    }
-    else if(category == 2){
+    } else if(category == 2){
         strcpy(catName, "Commercial");
         fixedCharge = 300;
         slab1 = 100; slab2 = 200;
         rate1 = 5.0; rate2 = 6.5; rate3 = 8.0;
-    }
-    else if(category == 3){
+    } else if(category == 3){
         strcpy(catName, "Industrial");
         fixedCharge = 500;
         slab1 = 200; slab2 = 0;
         rate1 = 8.0; rate2 = 9.5; rate3 = 0;
-    }
-    else if(category == 4){
+    } else if(category == 4){
         strcpy(catName, "Agricultural");
         fixedCharge = 50;
         slab1 = 100; slab2 = 0;
         rate1 = 0; rate2 = 2.5; rate3 = 0;
-    }
-    else{
+    } else{
         printf("Invalid category!\n");
         return 0;
     }
 
-    // 8 Calculate slab charges
     int slabUnits[3] = {slab1, slab2, 0};
     float rate[3] = {rate1, rate2, rate3};
     float slabCharge[3] = {0,0,0};
@@ -190,11 +177,10 @@ int main() {
     float tax = subtotal * 0.05;
     float totalBill = subtotal + tax;
 
-    // 9 Late payment
     int latePayment;
     float penalty = 0;
     printf("Is the payment late? (1 = Yes, 0 = No): ");
-    scanf("%d", &latePayment);
+    scanf("%d", &amp;latePayment);
 
     if(latePayment == 1){
         penalty = totalBill * 0.10;
@@ -269,4 +255,3 @@ int main() {
 </code></pre>
 </body>
 </html>
-
