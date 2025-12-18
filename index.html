@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Electricity Bill C Program</title>
+  <title>Electricity Bill C Program (File-Based)</title>
   <style>
     body { font-family: Menlo, Monaco, "Courier New", monospace; background:#f6f8fa; color:#111; padding:24px; }
     h1 { font-size:18px; margin-bottom:8px; }
@@ -12,51 +12,87 @@
   </style>
 </head>
 <body>
-  <h1>Electricity Bill C Program</h1>
+  <h1>Electricity Bill C Program (File-Based)</h1>
 
   <pre><code>#include &lt;stdio.h&gt;
 #include &lt;string.h&gt;
 
 int main() {
+    char names[3][50];
+    char address[3][100];
+    char phone[3][20];
+    int last4digits[3];
+    int previousMonthUnits[3];
 
-    //Fake database -
-    char names[3][50] = {"Ravi Kumar", "Suman Sharma", "Ankit Verma"};
-    char address[3][100] = {"Jaipur, Rajasthan", "Delhi, India", "Mumbai, Maharashtra"};
-    char phone[3][20] = {"9876543210", "8765432109", "9988776655"};
-    int last4digits[3] = {1234, 4567, 7890};
+    // Create and write default database
+    FILE *db = fopen("database.txt", "w");
+    if(db == NULL){
+        printf("Error creating database file!\n");
+        return 1;
+    }
 
-    int previousMonthUnits[3] = {150, 220, 180};
+    fprintf(db, "Ravi Kumar\n");
+        fprintf(db, "Jaipur, Rajasthan\n");
+        fprintf(db, "9876543210\n");
+        fprintf(db, "1234\n");
+        fprintf(db, "150\n");
+
+        fprintf(db, "Suman Sharma\n");
+        fprintf(db, "Delhi, India\n");
+        fprintf(db, "8765432109\n");
+        fprintf(db, "4567\n");
+        fprintf(db, "220\n");
+
+        fprintf(db, "Ankit Verma\n");
+        fprintf(db, "Mumbai, Maharashtra\n");
+        fprintf(db, "9988776655\n");
+        fprintf(db, "7890\n");
+        fprintf(db, "180\n");
+    fclose(db);
+
+    // Open file for reading
+    db = fopen("database.txt", "r");
+    if(db == NULL){
+        printf("Error opening database file!\n");
+        return 1;
+    }
+
+    for(int i = 0; i &lt; 3; i++){
+        fgets(names[i], 50, db);
+        fgets(address[i], 100, db);
+        fgets(phone[i], 20, db);
+        fscanf(db, "%d\n", &last4digits[i]);
+        fscanf(db, "%d\n", &previousMonthUnits[i]);
+    }
+    fclose(db);
+
+    for(int i = 0; i &lt; 3; i++){
+        names[i][strcspn(names[i], "\n")] = '\0';
+        address[i][strcspn(address[i], "\n")] = '\0';
+        phone[i][strcspn(phone[i], "\n")] = '\0';
+    }
 
     int inputID, index = -1;
-
-    printf("Enter last 4 digits of your consumer number: ");
-    scanf("%d", &amp;inputID);
-
-    // Find user 
-    for(int i = 0; i &lt; 3; i++){
-        if(last4digits[i] == inputID){
-            index = i;
-            break;
+    do {
+        printf("Enter last 4 digits of your consumer number: ");
+        scanf("%d", &inputID);
+        index = -1;
+        for(int i = 0; i &lt; 3; i++){
+            if(last4digits[i] == inputID){
+                index = i;
+                break;
+            }
         }
-    }
+        if(index == -1) printf("Invalid number! Please try again.\n");
+    } while(index == -1);
 
-    if(index == -1){
-        printf("\nNo user found!\n");
-        return 0;
-    }
+    printf("\nCustomer Found!\nName: %s\nAddress: %s\nPhone: %s\n",
+           names[index], address[index], phone[index]);
 
-    printf("\nCustomer Found!\n");
-    printf("Name    : %s\n", names[index]);
-    printf("Address : %s\n", address[index]);
-    printf("Phone   : %s\n", phone[index]);
-
-    //  Meter readings 
     int prevReading = previousMonthUnits[index];
     int currentReading;
-
-    printf("\nPrevious month reading: %d units\n", prevReading);
-    printf("Enter current month meter reading: ");
-    scanf("%d", &amp;currentReading);
+    printf("\nPrevious month reading: %d units\nEnter current month meter reading: ", prevReading);
+    scanf("%d", &currentReading);
 
     if(currentReading &lt; prevReading){
         printf("\nInvalid reading! Current must be &gt;= previous\n");
@@ -65,15 +101,12 @@ int main() {
 
     int units = currentReading - prevReading;
 
-    // Category 
     int category;
-    printf("\nSelect Category:\n");
-    printf("1. Domestic\n");
-    printf("2. Commercial\n");
-    printf("3. Industrial\n");
-    printf("4. Agricultural\n");
-    printf("Enter your choice: ");
-    scanf("%d", &amp;category);
+    do {
+        printf("\nSelect Category:\\n1. Domestic\\n2. Commercial\\n3. Industrial\\n4. Agricultural\\nEnter your choice: ");
+        scanf("%d", &category);
+        if(category &lt; 1 || category &gt; 4) printf("Invalid category! Please enter 1-4.\n");
+    } while(category &lt; 1 || category &gt; 4);
 
     char catName[20];
     float fixedCharge, rate1, rate2, rate3;
@@ -81,34 +114,18 @@ int main() {
 
     if(category == 1){
         strcpy(catName, "Domestic");
-        fixedCharge = 100;
-        slab1 = 100; slab2 = 100;
-        rate1 = 3.0; rate2 = 4.5; rate3 = 6.0;
-    }
-    else if(category == 2){
+        fixedCharge = 100; slab1 = 100; slab2 = 100; rate1 = 3.0; rate2 = 4.5; rate3 = 6.0;
+    } else if(category == 2){
         strcpy(catName, "Commercial");
-        fixedCharge = 300;
-        slab1 = 100; slab2 = 200;
-        rate1 = 5.0; rate2 = 6.5; rate3 = 8.0;
-    }
-    else if(category == 3){
+        fixedCharge = 300; slab1 = 100; slab2 = 200; rate1 = 5.0; rate2 = 6.5; rate3 = 8.0;
+    } else if(category == 3){
         strcpy(catName, "Industrial");
-        fixedCharge = 500;
-        slab1 = 200; slab2 = 0;
-        rate1 = 8.0; rate2 = 9.5; rate3 = 0;
-    }
-    else if(category == 4){
+        fixedCharge = 500; slab1 = 200; slab2 = 0; rate1 = 8.0; rate2 = 9.5; rate3 = 0;
+    } else if(category == 4){
         strcpy(catName, "Agricultural");
-        fixedCharge = 50;
-        slab1 = 100; slab2 = 0;
-        rate1 = 0; rate2 = 2.5; rate3 = 0;
-    }
-    else{
-        printf("Invalid category!\n");
-        return 0;
+        fixedCharge = 50; slab1 = 100; slab2 = 0; rate1 = 0; rate2 = 2.5; rate3 = 0;
     }
 
-    //  Billing 
     int slabUnits[3] = {slab1, slab2, 0};
     float rate[3] = {rate1, rate2, rate3};
     float slabCharge[3] = {0,0,0};
@@ -117,18 +134,7 @@ int main() {
 
     for(int i = 0; i &lt; 3; i++){
         if(remaining &lt;= 0) break;
-
-        int currentSlab;
-        if(slabUnits[i] == 0){ // ye 0 liya end wale slab ke liye haaiii
-            currentSlab = remaining;
-        }
-        else if(remaining &lt; slabUnits[i]){
-            currentSlab = remaining;
-        }
-        else{
-            currentSlab = slabUnits[i];
-        }
-
+        int currentSlab = (slabUnits[i] == 0 || remaining &lt; slabUnits[i]) ? remaining : slabUnits[i];
         slabCharge[i] = currentSlab * rate[i];
         bill += slabCharge[i];
         remaining -= currentSlab;
@@ -138,49 +144,45 @@ int main() {
     float tax = subtotal * 0.05;
     float totalBill = subtotal + tax;
 
-    //  Late Payment 
-    int latePayment;
-    float penalty = 0;
-
+    int latePayment; float penalty = 0;
     printf("Is the payment late? (1 = Yes, 0 = No): ");
-    scanf("%d", &amp;latePayment);
+    scanf("%d", &latePayment);
+    if(latePayment == 1){ penalty = totalBill * 0.10; totalBill += penalty; }
 
-    if(latePayment == 1){
-        penalty = totalBill * 0.10;
-        totalBill += penalty;
-    }
+    FILE *fptr = fopen("print.txt", "w");
+    if(fptr == NULL) printf("Not able to find the file\n");
 
-    // ---------------- BILL PRINT ----------------
-    printf("\n----------------------------------\n");
-    printf("               BILL\n");
-    printf("----------------------------------\n");
-    printf("Name             : %s\n", names[index]);
-    printf("Address          : %s\n", address[index]);
-    printf("Phone            : %s\n", phone[index]);
-    printf("Category         : %s\n", catName);
-    printf("----------------------------------\n");
-    printf("Prev Reading     : %d\n", prevReading);
-    printf("Current Reading  : %d\n", currentReading);
-    printf("Units Consumed   : %d\n", units);
-    printf("----------------------------------\n");
-    printf("Slab-wise Charges:\n");
-    printf("Slab 1          @ %.1f  = Rs %.2f\n", rate[0], slabCharge[0]);
-    printf("Slab 2          @ %.1f  = Rs %.2f\n", rate[1], slabCharge[1]);
-    if(rate[2] &gt; 0)
-        printf("Slab 3          @ %.1f  = Rs %.2f\n", rate[2], slabCharge[2]);
-    printf("----------------------------------\n");
-    printf("Energy Charge    : Rs %.2f\n", bill);
-    printf("Fixed Charge     : Rs %.2f\n", fixedCharge);
-    printf("Tax (5%%)         : Rs %.2f\n", tax);
-    if(latePayment == 1)
-        printf("Late Penalty     : Rs %.2f\n", penalty);
-    printf("----------------------------------\n");
-    printf("Total Payable    : Rs %.2f\n", totalBill);
-    printf("----------------------------------\n");
+    fprintf(fptr, "----------------------------------\n");
+    fprintf(fptr, "               BILL\n");
+    fprintf(fptr, "----------------------------------\n");
+    fprintf(fptr, "Name             : %s\n", names[index]);
+    fprintf(fptr, "Address          : %s\n", address[index]);
+    fprintf(fptr, "Phone            : %s\n", phone[index]);
+    fprintf(fptr, "Category         : %s\n", catName);
+    fprintf(fptr, "----------------------------------\n");
+    fprintf(fptr, "Prev Reading     : %d\n", prevReading);
+    fprintf(fptr, "Current Reading  : %d\n", currentReading);
+    fprintf(fptr, "Units Consumed   : %d\n", units);
+    fprintf(fptr, "----------------------------------\n");
+    fprintf(fptr, "Slab-wise Charges:\n");
+    fprintf(fptr, "Slab 1          @ %.1f  = Rs %.2f\n", rate[0], slabCharge[0]);
+    fprintf(fptr, "Slab 2          @ %.1f  = Rs %.2f\n", rate[1], slabCharge[1]);
+    if(rate[2] &gt; 0) fprintf(fptr, "Slab 3          @ %.1f  = Rs %.2f\n", rate[2], slabCharge[2]);
+    fprintf(fptr, "----------------------------------\n");
+    fprintf(fptr, "Energy Charge    : Rs %.2f\n", bill);
+    fprintf(fptr, "Fixed Charge     : Rs %.2f\n", fixedCharge);
+    fprintf(fptr, "Tax (5%%)         : Rs %.2f\n", tax);
+    if(latePayment == 1) fprintf(fptr, "Late Penalty     : Rs %.2f\n", penalty);
+    fprintf(fptr, "----------------------------------\n");
+    fprintf(fptr, "Total Payable    : Rs %.2f\n", totalBill);
+    fprintf(fptr, "----------------------------------\n");
+    fclose(fptr);
 
+    printf("\nBill saved to print.txt successfully!\n");
     return 0;
 }
 </code></pre>
 
 </body>
 </html>
+
